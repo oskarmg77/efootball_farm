@@ -36,6 +36,8 @@ VGPAD_BUTTON_CODES = {
     # Sticks
     'left_stick_press': vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_THUMB,
     'right_stick_press': vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_THUMB,
+    # Botones especiales
+    'start_button': vg.XUSB_BUTTON.XUSB_GAMEPAD_START,
 }
 
 def execute_action(action: str, scheme: dict) -> str:
@@ -67,8 +69,6 @@ def execute_action(action: str, scheme: dict) -> str:
 
         # Busca el código del botón en nuestro diccionario de traducción
         button_code = VGPAD_BUTTON_CODES.get(control_to_press)
-        if not button_code:
-            return f"Error: El control de gamepad '{control_to_press}' no tiene un código de botón asociado."
 
         # Manejo especial para triggers (son ejes, no botones)
         if control_to_press == 'left_trigger':
@@ -78,8 +78,16 @@ def execute_action(action: str, scheme: dict) -> str:
             gamepad.left_trigger_float(value_float=0.0)
             gamepad.update()
             return f"Acción '{action}' ejecutada -> Gamepad Trigger Izquierdo"
-        # Añadir 'right_trigger' si fuera necesario
-        # ...
+        elif control_to_press == 'right_trigger':
+            gamepad.right_trigger_float(value_float=1.0)
+            gamepad.update()
+            time.sleep(0.1)
+            gamepad.right_trigger_float(value_float=0.0)
+            gamepad.update()
+            return f"Acción '{action}' ejecutada -> Gamepad Trigger Derecho"
+
+        if not button_code:
+            return f"Error: El control de gamepad '{control_to_press}' no tiene un código de botón asociado o no es un botón estándar (ej. trigger)."
 
         try:
             gamepad.press_button(button=button_code)

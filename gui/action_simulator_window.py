@@ -30,10 +30,10 @@ class ActionSimulatorWindow(tk.Toplevel):
         scheme_selector_frame.pack(fill=tk.X, pady=(0, 15))
         ttk.Label(scheme_selector_frame, text="Modo de Control:").pack(side=tk.LEFT)
         
-        keyboard_radio = ttk.Radiobutton(scheme_selector_frame, text="Teclado", variable=self.current_scheme, value="Teclado")
+        keyboard_radio = ttk.Radiobutton(scheme_selector_frame, text="Teclado", variable=self.current_scheme, value="Teclado", command=self.update_button_labels)
         keyboard_radio.pack(side=tk.LEFT, padx=5)
         
-        gamepad_radio = ttk.Radiobutton(scheme_selector_frame, text="Gamepad", variable=self.current_scheme, value="Gamepad")
+        gamepad_radio = ttk.Radiobutton(scheme_selector_frame, text="Gamepad", variable=self.current_scheme, value="Gamepad", command=self.update_button_labels)
         gamepad_radio.pack(side=tk.LEFT, padx=5)
 
         # Botones de acción
@@ -42,7 +42,7 @@ class ActionSimulatorWindow(tk.Toplevel):
 
         # Definimos las acciones que queremos mostrar en la GUI
         # Tupla: (Texto del botón, clave de la acción en el mapping)
-        actions_to_show = [
+        self.actions_to_show = [
             ("↑ Mover Arriba", 'MOVE_UP'),
             ("↓ Mover Abajo", 'MOVE_DOWN'),
             ("← Mover Izquierda", 'MOVE_LEFT'),
@@ -50,21 +50,27 @@ class ActionSimulatorWindow(tk.Toplevel):
             ("Pase Corto / Presión", 'PASS_SHORT'),
             ("Disparo / Cargar", 'SHOOT'),
             ("Pase Largo / Entrada", 'PASS_HIGH'),
-            ("Pase Profundo / Salida Portero", 'PASS_THROUGH'),
+            ("Pase Profundo / Salir Portero", 'PASS_THROUGH'),
             ("Sprint", 'SPRINT'),
-            ("Cambiar Jugador", 'CHANGE_PLAYER'),
+            ("Control Cercano / Cambiar Jugador", 'CHANGE_PLAYER'),
+            ("Llamar 2º Defensor", 'CALL_SECOND_DEFENDER'),
             ("Confirmar", 'CONFIRM'),
             ("Atrás / Cancelar", 'BACK'),
+            ("Pausa", 'PAUSE_MENU'),
         ]
 
+        # Lista para guardar las referencias a los botones y sus claves de acción
+        self.action_buttons = []
+
         # Crear un botón para cada acción
-        for i, (text, action_key) in enumerate(actions_to_show):
+        for text, action_key in self.actions_to_show:
             button = ttk.Button(
                 action_buttons_frame,
                 text=text,
                 command=lambda key=action_key: self.on_action_button_click(key)
             )
             button.pack(fill=tk.X, pady=2)
+            self.action_buttons.append((button, action_key))
 
         # --- Panel de Registro (Derecha) ---
         log_panel = ttk.LabelFrame(main_frame, text="Registro de Acciones", padding="10")
@@ -75,6 +81,9 @@ class ActionSimulatorWindow(tk.Toplevel):
 
         self.log_message("Simulador iniciado. Selecciona un modo y una acción.")
         self.log_message("ADVERTENCIA: Las acciones simularán pulsaciones de teclas/gamepad en la ventana activa.", "orange")
+
+        # Actualizamos las etiquetas de los botones al estado inicial (Teclado)
+        self.update_button_labels()
 
     def get_active_scheme(self):
         """Devuelve el diccionario de mapeo basado en la selección de la GUI."""
@@ -100,6 +109,27 @@ class ActionSimulatorWindow(tk.Toplevel):
             self.log_message(result, "red")
         else:
             self.log_message(result, "green")
+
+    def update_button_labels(self):
+        """Actualiza el texto de los botones de acción según el esquema de control seleccionado."""
+        active_scheme = self.get_active_scheme()
+        is_gamepad = (active_scheme == controls.GAMEPAD_MAPPING)
+
+        # Mapeo de nombres internos a nombres amigables para el usuario
+        gamepad_name_map = {
+            'button_south': 'A', 'button_east': 'B', 'button_west': 'X', 'button_north': 'Y',
+            'left_bumper': 'LB', 'right_bumper': 'RB',
+            'left_trigger': 'LT', 'right_trigger': 'RT',
+            'start_button': 'Start',
+            'dpad_up': '↑', 'dpad_down': '↓', 'dpad_left': '←', 'dpad_right': '→',
+        }
+
+        for (button, action_key), (base_text, _) in zip(self.action_buttons, self.actions_to_show):
+            control = active_scheme.get(action_key, '?')
+            
+            # Formateamos el nombre del botón de gamepad para que sea más legible
+            display_control = gamepad_name_map.get(control, control.upper()) if is_gamepad else control.upper()
+            button.config(text=f"{base_text} ({display_control})")
 
     def log_message(self, message: str, color: str = "black"):
         """Añade un mensaje al registro de texto con un color específico."""
