@@ -1,0 +1,1 @@
+# La clase base de la que heredarán todas las ventanas.

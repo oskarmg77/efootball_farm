@@ -1,0 +1,1 @@
+# La ventana de prueba para el gamepad/teclado.
