@@ -1,44 +1,49 @@
 # core/input_controller.py
 
 import pydirectinput
-import vgamepad as vg
 import time
 
 # Importamos todas las variables de control necesarias
 from config import controls
 
-# --- INICIALIZACIÓN DEL GAMEPAD VIRTUAL ---
-# Se intenta crear un gamepad virtual al iniciar el programa.
-# Solo se usará si ACTIVE_CONTROL_SCHEME está configurado para gamepad.
-try:
-    gamepad = vg.VX360Gamepad()
-    print("Controlador de Gamepad: Gamepad virtual (VBus) inicializado correctamente.")
-except Exception:
-    gamepad = None
-    print("ADVERTENCIA: No se pudo inicializar el gamepad virtual. Asegúrate de que ViGEmBus está instalado.")
-    print("El control por gamepad no funcionará.")
+# --- GESTIÓN DEL GAMEPAD VIRTUAL ---
+# El gamepad se inicializará solo cuando sea necesario para evitar errores si ViGEmBus no está instalado.
+gamepad = None
+VGPAD_BUTTON_CODES = {}
 
-# Diccionario para traducir nuestros nombres de botones de gamepad a los códigos de la librería vgamepad
-VGPAD_BUTTON_CODES = {
-    # D-Pad
-    'dpad_up': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP,
-    'dpad_down': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN,
-    'dpad_left': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT,
-    'dpad_right': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT,
-    # Botones frontales (Face Buttons)
-    'button_south': vg.XUSB_BUTTON.XUSB_GAMEPAD_A,
-    'button_east': vg.XUSB_BUTTON.XUSB_GAMEPAD_B,
-    'button_west': vg.XUSB_BUTTON.XUSB_GAMEPAD_X,
-    'button_north': vg.XUSB_BUTTON.XUSB_GAMEPAD_Y,
-    # Botones superiores (Shoulder/Bumper)
-    'left_bumper': vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER,
-    'right_bumper': vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER,
-    # Sticks
-    'left_stick_press': vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_THUMB,
-    'right_stick_press': vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_THUMB,
-    # Botones especiales
-    'start_button': vg.XUSB_BUTTON.XUSB_GAMEPAD_START,
-}
+def initialize_gamepad():
+    """Inicializa el gamepad virtual si aún no se ha hecho."""
+    global gamepad, VGPAD_BUTTON_CODES
+    if gamepad is not None:
+        return True
+
+    try:
+        import vgamepad as vg
+        gamepad = vg.VX360Gamepad()
+        print("Controlador de Gamepad: Gamepad virtual (VBus) inicializado correctamente.")
+
+        # Rellenamos el diccionario de códigos de botones una vez importado vg
+        VGPAD_BUTTON_CODES.update({
+            'dpad_up': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP,
+            'dpad_down': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN,
+            'dpad_left': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT,
+            'dpad_right': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT,
+            'button_south': vg.XUSB_BUTTON.XUSB_GAMEPAD_A,
+            'button_east': vg.XUSB_BUTTON.XUSB_GAMEPAD_B,
+            'button_west': vg.XUSB_BUTTON.XUSB_GAMEPAD_X,
+            'button_north': vg.XUSB_BUTTON.XUSB_GAMEPAD_Y,
+            'left_bumper': vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER,
+            'right_bumper': vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER,
+            'left_stick_press': vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_THUMB,
+            'right_stick_press': vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_THUMB,
+            'start_button': vg.XUSB_BUTTON.XUSB_GAMEPAD_START,
+        })
+        return True
+    except (ImportError, Exception) as e:
+        gamepad = None # Aseguramos que siga siendo None si falla
+        print(f"ADVERTENCIA: No se pudo inicializar el gamepad virtual. {e}")
+        print("Asegúrate de que ViGEmBus está instalado para usar el modo gamepad.")
+        return False
 
 def execute_action(action: str, scheme: dict) -> str:
     """
@@ -64,7 +69,8 @@ def execute_action(action: str, scheme: dict) -> str:
 
     elif scheme is controls.GAMEPAD_MAPPING:
         # MODO GAMEPAD
-        if not gamepad:
+        # Intentamos inicializar el gamepad si es la primera vez que se usa
+        if not initialize_gamepad():
             return "Error: Se intentó usar el gamepad, pero no está inicializado."
 
         # Busca el código del botón en nuestro diccionario de traducción
@@ -90,6 +96,7 @@ def execute_action(action: str, scheme: dict) -> str:
             return f"Error: El control de gamepad '{control_to_press}' no tiene un código de botón asociado o no es un botón estándar (ej. trigger)."
 
         try:
+            # El gamepad ya está inicializado y disponible aquí
             gamepad.press_button(button=button_code)
             gamepad.update()
             time.sleep(0.1)  # Pausa breve para asegurar que el juego registre la pulsación

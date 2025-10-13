@@ -7,35 +7,51 @@ Define las acciones abstractas y las asigna a teclas de teclado o botones de gam
 
 # --- ACCIONES ABSTRACTAS DEL JUEGO ---
 # Usamos nombres descriptivos para cada acción posible.
+# Estas constantes se usarán en toda la aplicación para evitar errores de tipeo.
+
+# Movimiento
+MOVE_UP = 'MOVE_UP'
+MOVE_DOWN = 'MOVE_DOWN'
+MOVE_LEFT = 'MOVE_LEFT'
+MOVE_RIGHT = 'MOVE_RIGHT'
+
+# Acciones de Menú
+CONFIRM = 'CONFIRM'
+BACK = 'BACK'
+PAUSE_MENU = 'PAUSE_MENU'
+
+# Acciones en Juego
+SPRINT = 'SPRINT'
+PASS_SHORT = 'PASS_SHORT'
+PASS_HIGH = 'PASS_HIGH'
+PASS_THROUGH = 'PASS_THROUGH'
+SHOOT = 'SHOOT'
+CHANGE_PLAYER = 'CHANGE_PLAYER'
+CALL_SECOND_DEFENDER = 'CALL_SECOND_DEFENDER'
+
 
 KEYBOARD_MAPPING = {
     # Movimiento y Navegación en Menús
-    'MOVE_UP': 'up',
-    'MOVE_DOWN': 'down',
-    'MOVE_LEFT': 'left',
-    'MOVE_RIGHT': 'right',
+    MOVE_UP: 'up',
+    MOVE_DOWN: 'down',
+    MOVE_LEFT: 'left',
+    MOVE_RIGHT: 'right',
 
     # Acciones en el Juego (Ataque)
-    'SPRINT': 'c',
-    'PASS_SHORT': 'x',
-    'PASS_HIGH': 'd',
-    'PASS_THROUGH': 'w',
-    'SHOOT': 'a',
-    'TRICK': '3',
-    'CLOSE_CONTROL': 'z',
+    SPRINT: 'c',
+    PASS_SHORT: 'x',
+    PASS_HIGH: 'd',
+    PASS_THROUGH: 'w',
+    SHOOT: 'a',
 
     # Acciones en el Juego (Defensa)
-    'CHANGE_PLAYER': 'q',
-    'PRESSURE': 'x',          # Misma tecla que pase corto
-    'SLIDE_TACKLE': 'd',      # Misma tecla que pase elevado
-    'CALL_SECOND_DEFENDER': 'a', # Misma tecla que disparo
-    'GOALKEEPER_RUSH': 'w',   # Misma tecla que pase en profundidad
+    CHANGE_PLAYER: 'q',
+    CALL_SECOND_DEFENDER: 'a', # Misma tecla que disparo
 
     # Acciones de Menú
-    'PAUSE_MENU': 'b',
-    'CONFIRM': 'enter',
-    'BACK': 'esc',
-    'CANCEL_ACTION': 'd',
+    PAUSE_MENU: 'b',
+    CONFIRM: 'enter',
+    BACK: 'esc',
 }
 
 GAMEPAD_MAPPING = {
@@ -47,27 +63,22 @@ GAMEPAD_MAPPING = {
     # NOTA: El movimiento del jugador con el stick izquierdo es analógico y se gestionará de forma diferente.
 
     # Acciones en el Juego (Ataque)
-    'SPRINT': 'right_trigger',       # RT
-    'PASS_SHORT': 'button_south',    # A (Xbox)
-    'PASS_HIGH': 'button_west',      # X (Xbox)
-    'PASS_THROUGH': 'button_north',  # Y (Xbox)
-    'SHOOT': 'button_east',          # B (Xbox)
-    'TRICK': 'right_stick_press',    # Pulsar Stick Derecho (R3)
-    'CLOSE_CONTROL': 'left_bumper',  # LB
+    SPRINT: 'right_trigger',       # RT
+    PASS_SHORT: 'button_south',    # A (Xbox)
+    PASS_HIGH: 'button_west',      # X (Xbox)
+    PASS_THROUGH: 'button_north',  # Y (Xbox)
+    SHOOT: 'button_east',          # B (Xbox)
 
     # Acciones en el Juego (Defensa)
-    'CHANGE_PLAYER': 'left_bumper',        # LB
-    'PRESSURE': 'button_south',            # A (Xbox)
-    'SLIDE_TACKLE': 'button_west',         # X (Xbox)
-    'CALL_SECOND_DEFENDER': 'right_bumper',# RB
-    'GOALKEEPER_RUSH': 'button_north',     # Y (Xbox)
+    CHANGE_PLAYER: 'left_bumper',        # LB
+    CALL_SECOND_DEFENDER: 'right_bumper',# RB
 
     # Acciones de Menú
-    'PAUSE_MENU': 'start_button',
-    'CONFIRM': 'button_south',       # A (Xbox)
-    'BACK': 'button_east',           # B (Xbox)
-    'CANCEL_ACTION': 'button_west',  # X (Xbox)
+    PAUSE_MENU: 'start_button',
+    CONFIRM: 'button_south',       # A (Xbox)
+    BACK: 'button_east',           # B (Xbox)
 }
 
 # Por defecto, el programa usará el mapeo de teclado.
-ACTIVE_CONTROL_SCHEME = KEYBOARD_MAPPING
+# Esta variable ya no es necesaria, ya que la GUI gestiona el esquema activo.
+# ACTIVE_CONTROL_SCHEME = KEYBOARD_MAPPING

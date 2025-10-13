@@ -1,7 +1,7 @@
 # gui/action_simulator_window.py
 
 import tkinter as tk
-from tkinter import scrolledtext, ttk, messagebox
+from tkinter import scrolledtext, ttk
 import time
 
 from core.input_controller import execute_action
