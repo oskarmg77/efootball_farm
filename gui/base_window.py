@@ -4,7 +4,7 @@
 import customtkinter as ctk
 
 class BaseWindow(ctk.CTkToplevel):
-    def __init__(self, title="Ventana de Prueba", width=400, height=300):
+    def __init__(self, title="Ventana de Prueba", width=400, height=300, resizable=True):
         super().__init__()
 
         # --- Configuración de la Apariencia ---
@@ -13,7 +13,7 @@ class BaseWindow(ctk.CTkToplevel):
 
         self.title(title)
         self.geometry(f"{width}x{height}")
-        self.resizable(False, False)
+        self.resizable(resizable, resizable)
 
         # Centrar la ventana (opcional pero recomendable)
         self.after(250, lambda: self.center_window(width, height))

@@ -13,7 +13,7 @@ class MainWindow(BaseWindow):
     """
     def __init__(self):
         # Usamos la clase base para unificar el estilo
-        super().__init__(title="eFootball Farm - Panel Principal", width=500, height=350)
+        super().__init__(title="eFootball Farm - Panel Principal", width=500, height=400, resizable=False)
 
         main_frame = ctk.CTkFrame(self)
         main_frame.pack(pady=20, padx=20, fill="both", expand=True)
@@ -33,6 +33,10 @@ class MainWindow(BaseWindow):
         # Botón para el entrenamiento de visión
         ctk.CTkButton(main_frame, text="Entrenar Módulo de Visión", command=self.open_vision_trainer).pack(pady=10, padx=20, fill="x")
 
+        # Botón para cerrar la aplicación
+        ctk.CTkButton(main_frame, text="Cerrar Aplicación", command=self.on_close,
+                      fg_color="#D32F2F", hover_color="#B71C1C").pack(side="bottom", pady=(20, 10), padx=20)
+
     def open_input_simulator(self):
         """Abre la ventana de simulación de acciones."""
         win = InputTestWindow()
@@ -48,3 +52,7 @@ class MainWindow(BaseWindow):
         # Nota: VisionTrainingWindow usa tkinter estándar, se verá diferente.
         win = VisionTrainingWindow(self)
         win.grab_set()
+
+    def on_close(self):
+        """Cierra la aplicación."""
+        self.destroy()

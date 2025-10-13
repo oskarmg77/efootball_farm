@@ -20,18 +20,25 @@ El usuario podrá dar una orden de alto nivel, como *"Jugar el evento de la IA l
 
 ## ✨ Estado Actual del Proyecto (Lo que ya tenemos)
 
-Actualmente, se ha construido la base fundamental del proyecto, enfocada en la modularidad y las herramientas de control.
+Actualmente, se ha construido la base fundamental del proyecto, enfocada en la modularidad, las herramientas de control y el inicio del módulo de visión.
 
-*   **Estructura de Proyecto Sólida:** El código está organizado en módulos con responsabilidades claras (`core`, `config`, `gui`, `agent`), facilitando la escalabilidad y el mantenimiento.
+*   **Estructura de Proyecto Sólida:** El código está organizado en módulos con responsabilidades claras (`core`, `config`, `gui`, `vision`), facilitando la escalabilidad y el mantenimiento.
 
-*   **Interfaz Gráfica Funcional:**
-    *   Una ventana principal que actúa como panel de control.
+*   **Interfaz Gráfica Mejorada:**
+    *   Una ventana principal que actúa como panel de control, con un nuevo botón para cerrar la aplicación.
     *   Una ventana de depuración para probar el sistema de control de input en tiempo real.
-    *   Apariencia moderna y atractiva gracias a la librería CustomTkinter.
+    *   Se ha mejorado la consistencia de la interfaz, permitiendo controlar si las ventanas son redimensionables o no.
+    *   Apariencia moderna y unificada gracias a la librería CustomTkinter.
+
+*   **Herramienta de Entrenamiento para el Módulo de Visión:**
+    *   Se ha creado una nueva ventana (`VisionTrainingWindow`) para guiar al usuario en el proceso de mapeo de las pantallas del juego.
+    *   **Interfaz Intuitiva:** La ventana utiliza un panel de instrucciones dinámico que cambia de color y texto para indicar al usuario exactamente qué hacer en cada paso (ej. "Ve a la pantalla X", "Realiza una acción en el juego", "Analiza la nueva pantalla").
+    *   **Captura de Acciones:** El sistema ahora puede "escuchar" y registrar la acción (teclado o gamepad) que el usuario realiza para navegar entre dos menús.
+    *   Esto sienta las bases para construir el mapa de navegación que el agente de IA usará para moverse por el juego.
 
 *   **Controlador de Input Flexible:**
     *   Capacidad para simular pulsaciones tanto de **teclado** como de **gamepad**.
-    *   El cambio entre teclado y gamepad se realiza fácilmente modificando una sola variable en un archivo de configuración (`config/controls.py`), sin necesidad de alterar la lógica del programa.
+    *   El cambio entre teclado y gamepad se realiza fácilmente modificando una sola variable en un archivo de configuración (`config/controls.py`).
 
 *   **Herramienta de Prueba de Controles:** La GUI incluye una interfaz específica para enviar comandos de movimiento (`arriba`, `abajo`, `aceptar`, etc.) y verificar que el sistema operativo y el juego los reciben correctamente.
 
@@ -55,10 +62,13 @@ Actualmente, se ha construido la base fundamental del proyecto, enfocada en la m
 ├── gui/
 │   ├── base_window.py          # Clase base para todas las ventanas.
 │   ├── main_window.py          # GUI principal de la aplicación.
-│   └── input_test_window.py    # GUI para probar los controles.
+│   ├── input_test_window.py    # GUI para probar los controles.
+│   └── vision_training_window.py # GUI para el entrenamiento del módulo de visión.
+│
+├── vision/
+│   └── action_monitor.py       # Captura las acciones del usuario (teclado/gamepad).
 │
 ├── agent/                      # (Aún por desarrollar) El cerebro del bot.
-├── vision/                     # (Aún por desarrollar) Módulo de análisis con Gemini.
 │
 ├── requirements.txt            # Dependencias del proyecto.
 └── README.md                   # Este archivo.

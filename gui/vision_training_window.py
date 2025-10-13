@@ -1,14 +1,14 @@
 # gui/vision_training_window.py
 
-import tkinter as tk
-from tkinter import ttk, scrolledtext, messagebox
+import customtkinter as ctk
+from tkinter import messagebox
 
 # Importamos las clases y configuraciones necesarias
 from vision.action_monitor import ActionMonitor
 from config.controls import KEYBOARD_MAPPING, GAMEPAD_MAPPING
 
 
-class VisionTrainingWindow(tk.Toplevel):
+class VisionTrainingWindow(ctk.CTkToplevel):
     """
     Ventana para el entrenamiento asistido del modelo de visión.
     Permite al usuario mapear las pantallas del juego y las acciones para navegar entre ellas.
@@ -16,64 +16,91 @@ class VisionTrainingWindow(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.title("Entrenamiento del Módulo de Visión")
-        self.geometry("800x600")
+        self.geometry("800x650")
+        self.resizable(True, True)
 
         # --- Estado y Lógica ---
         self.action_monitor = None
         self.is_session_active = False
         self.node_counter = 0
 
-        self.protocol("WM_DELETE_WINDOW", self.on_close) # Manejar cierre de ventana
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
 
         # --- Frame Principal ---
-        main_frame = ttk.Frame(self, padding="10")
-        main_frame.pack(fill=tk.BOTH, expand=True)
-        main_frame.columnconfigure(0, weight=1)
-        main_frame.rowconfigure(2, weight=1) # Para que el log se expanda
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(2, weight=1)
+
+        # --- Panel de Instrucciones Dinámico ---
+        self.instructions_frame = ctk.CTkFrame(self, corner_radius=10, fg_color="#334257")
+        self.instructions_frame.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="ew")
+        self.instructions_frame.grid_columnconfigure(0, weight=1)
+
+        self.instructions_label = ctk.CTkLabel(self.instructions_frame, text="", font=ctk.CTkFont(size=14), wraplength=700)
+        self.instructions_label.grid(row=0, column=0, padx=20, pady=15, sticky="ew")
 
         # --- Frame de Controles ---
-        controls_frame = ttk.Frame(main_frame)
-        controls_frame.grid(row=0, column=0, sticky="ew", pady=(0, 10))
+        controls_frame = ctk.CTkFrame(self)
+        controls_frame.grid(row=1, column=0, padx=20, pady=10, sticky="ew")
 
-        self.start_session_button = ttk.Button(controls_frame, text="Iniciar Sesión de Entrenamiento", command=self.start_session)
-        self.start_session_button.pack(side=tk.LEFT, padx=(0, 10))
+        self.start_session_button = ctk.CTkButton(controls_frame, text="Iniciar Sesión de Entrenamiento", command=self.start_session)
+        self.start_session_button.pack(side="left", padx=10, pady=10)
 
-        self.analyze_button = ttk.Button(controls_frame, text="Analizar Pantalla", command=self.analyze_screen, state="disabled")
-        self.analyze_button.pack(side=tk.LEFT, padx=(0, 10))
+        self.analyze_button = ctk.CTkButton(controls_frame, text="Analizar Pantalla", command=self.analyze_screen, state="disabled")
+        self.analyze_button.pack(side="left", padx=10, pady=10)
 
-        self.save_map_button = ttk.Button(controls_frame, text="Guardar Mapa de Navegación", command=self.save_map, state="disabled")
-        self.save_map_button.pack(side=tk.LEFT)
+        self.save_map_button = ctk.CTkButton(controls_frame, text="Guardar Mapa de Navegación", command=self.save_map, state="disabled")
+        self.save_map_button.pack(side="left", padx=10, pady=10)
 
         # --- Log de la Sesión ---
-        log_label = ttk.Label(main_frame, text="Log de la Sesión:")
-        log_label.grid(row=1, column=0, sticky="w", pady=(10, 0))
+        log_frame = ctk.CTkFrame(self)
+        log_frame.grid(row=2, column=0, padx=20, pady=(10, 20), sticky="nsew")
+        log_frame.grid_rowconfigure(0, weight=1)
+        log_frame.grid_columnconfigure(0, weight=1)
 
-        self.log_text = scrolledtext.ScrolledText(main_frame, wrap=tk.WORD, height=10)
-        self.log_text.grid(row=2, column=0, sticky="nsew")
-        self.log_text.configure(state='disabled') # Hacerlo de solo lectura
+        self.log_text = ctk.CTkTextbox(log_frame, wrap="word", state="disabled")
+        self.log_text.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+
+        # Estado inicial
+        self._update_instructions("info", "Haz clic en 'Iniciar Sesión' para comenzar el proceso de mapeo de pantallas.")
 
     def _log(self, message):
         """Añade un mensaje al área de log."""
-        self.log_text.configure(state='normal')
-        self.log_text.insert(tk.END, message + "\n")
-        self.log_text.configure(state='disabled')
-        self.log_text.see(tk.END) # Auto-scroll
+        self.log_text.configure(state="normal")
+        self.log_text.insert("end", message + "\n")
+        self.log_text.configure(state="disabled")
+        self.log_text.see("end")
 
+    def _update_instructions(self, state, text):
+        """Actualiza el panel de instrucciones con un color y texto específicos."""
+        colors = {
+            "info": "#334257",      # Azul oscuro
+            "action_needed": "#FFC107", # Amarillo/Ámbar
+            "listening": "#2E7D32"      # Verde oscuro
+        }
+        text_colors = {
+            "info": "white",
+            "action_needed": "black",
+            "listening": "white"
+        }
+        self.instructions_frame.configure(fg_color=colors.get(state, "gray"))
+        self.instructions_label.configure(text=text, text_color=text_colors.get(state, "white"))
 
     def start_session(self):
         """Inicia una nueva sesión de entrenamiento."""
         self._log("INFO: Iniciando nueva sesión de entrenamiento.")
         self.is_session_active = True
         self.node_counter = 0
-
-        # Inicializamos el monitor de acciones
         self.action_monitor = ActionMonitor(KEYBOARD_MAPPING, GAMEPAD_MAPPING)
         self._log("INFO: Monitor de acciones iniciado. Esperando primer análisis.")
 
         # Actualizamos la GUI
-        self.start_session_button.config(state="disabled")
-        self.analyze_button.config(state="normal")
-        self.save_map_button.config(state="normal")
+        self.start_session_button.configure(state="disabled")
+        self.analyze_button.configure(state="normal")
+        self.save_map_button.configure(state="normal")
+        self._update_instructions(
+            "action_needed",
+            "PASO 1: Ve a la primera pantalla del juego que quieras mapear. Cuando estés listo, vuelve y haz clic en 'Analizar Pantalla'."
+        )
 
     def analyze_screen(self):
         """Analiza la pantalla actual, registra la acción previa y se prepara para la siguiente."""
@@ -81,7 +108,7 @@ class VisionTrainingWindow(tk.Toplevel):
             return
 
         # 1. Capturar la acción que nos trajo a esta pantalla
-        captured_action = self.action_monitor.get_captured_action()
+        captured_action = self.action_monitor.get_captured_action() # Esto es seguro, devuelve None si no hay nada
 
         # 2. Lógica de análisis de la pantalla (aquí irá la llamada a Gemini)
         # Por ahora, simulamos la creación de un nodo
@@ -97,8 +124,16 @@ class VisionTrainingWindow(tk.Toplevel):
             self._log("ACTION: (Es la primera pantalla, no hay acción previa)")
 
         # 3. Prepararse para la siguiente acción
+        self.analyze_button.configure(state="disabled") # Desactivar botón mientras se escucha
+        self._update_instructions(
+            "listening",
+            "PASO 2: ¡Escuchando! Ahora ve al juego y realiza UNA SOLA ACCIÓN para ir a la siguiente pantalla (ej. pulsar 'Enter', 'Abajo'...). La acción se registrará automáticamente."
+        )
+        self.update_idletasks() # Forzar actualización de la GUI
+
         self._log("LISTENING: Esperando la siguiente acción del usuario en el juego...")
         self.action_monitor.listen_for_single_action()
+        self.after(500, self.check_if_action_captured)
 
     def save_map(self):
         """Guarda el mapa de navegación generado."""
@@ -110,3 +145,14 @@ class VisionTrainingWindow(tk.Toplevel):
         if self.action_monitor:
             self.action_monitor.stop()
         self.destroy()
+
+    def check_if_action_captured(self):
+        """Comprueba periódicamente si el monitor ha capturado una acción."""
+        if self.action_monitor and self.action_monitor.last_action is not None:
+            self.analyze_button.configure(state="normal")
+            self._update_instructions(
+                "action_needed",
+                f"¡Acción '{self.action_monitor.last_action}' registrada! Ahora, vuelve a hacer clic en 'Analizar Pantalla' para confirmar la nueva pantalla."
+            )
+        elif self.is_session_active:
+            self.after(500, self.check_if_action_captured)
