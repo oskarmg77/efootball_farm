@@ -1,42 +1,50 @@
 # gui/main_window.py
 
-import tkinter as tk
-from tkinter import ttk
-from gui.action_simulator_window import ActionSimulatorWindow
+import customtkinter as ctk
+from .base_window import BaseWindow # Asumiendo que quieres usar la base para consistencia
+from gui.input_test_window import InputTestWindow
 from gui.vision_training_window import VisionTrainingWindow
+from gui.input_monitor_window import InputMonitorWindow
 
-class MainWindow(tk.Tk):
+class MainWindow(BaseWindow):
     """
     La ventana principal de la aplicación.
     Desde aquí se pueden lanzar otras herramientas como el simulador.
     """
     def __init__(self):
-        super().__init__()
+        # Usamos la clase base para unificar el estilo
+        super().__init__(title="eFootball Farm - Panel Principal", width=500, height=350)
 
-        self.title("eFootball Farm - Panel Principal")
-        self.geometry("500x300")
+        main_frame = ctk.CTkFrame(self)
+        main_frame.pack(pady=20, padx=20, fill="both", expand=True)
 
-        main_frame = ttk.Frame(self, padding="20")
-        main_frame.pack(fill=tk.BOTH, expand=True)
+        title_label = ctk.CTkLabel(main_frame, text="Asistente para eFootball", font=ctk.CTkFont(size=20, weight="bold"))
+        title_label.pack(pady=(10, 20))
 
-        title_label = ttk.Label(main_frame, text="Asistente para eFootball", font=("Segoe UI", 16, "bold"))
-        title_label.pack(pady=(0, 20))
+        description_label = ctk.CTkLabel(main_frame, text="Selecciona una herramienta para comenzar:")
+        description_label.pack(pady=(0, 20))
 
-        description_label = ttk.Label(main_frame, text="Selecciona una herramienta para comenzar.")
-        description_label.pack(pady=(0, 25))
+        # Botón para el simulador de acciones
+        ctk.CTkButton(main_frame, text="Probar Controles (Simulador)", command=self.open_input_simulator).pack(pady=10, padx=20, fill="x")
 
-        simulator_button = ttk.Button(main_frame, text="Abrir Simulador de Controles", command=self.open_simulator)
-        simulator_button.pack(pady=10, ipadx=10, ipady=5)
+        # Botón para el monitor de entradas en tiempo real
+        ctk.CTkButton(main_frame, text="Monitorear Entradas (Real-Time)", command=self.open_input_monitor).pack(pady=10, padx=20, fill="x")
 
-        vision_button = ttk.Button(main_frame, text="Módulo de Visión / Entrenamiento", command=self.open_vision_trainer)
-        vision_button.pack(pady=10, ipadx=10, ipady=5)
+        # Botón para el entrenamiento de visión
+        ctk.CTkButton(main_frame, text="Entrenar Módulo de Visión", command=self.open_vision_trainer).pack(pady=10, padx=20, fill="x")
 
-    def open_simulator(self):
-        """Crea y muestra la ventana del simulador de acciones."""
-        simulator_win = ActionSimulatorWindow(self)
-        simulator_win.grab_set() # Hace que la ventana del simulador sea modal
+    def open_input_simulator(self):
+        """Abre la ventana de simulación de acciones."""
+        win = InputTestWindow()
+        win.grab_set()
+
+    def open_input_monitor(self):
+        """Abre la ventana de monitoreo de entradas en tiempo real."""
+        win = InputMonitorWindow()
+        win.grab_set()
 
     def open_vision_trainer(self):
         """Crea y muestra la ventana de entrenamiento del módulo de visión."""
-        training_win = VisionTrainingWindow(self)
-        training_win.grab_set()
+        # Nota: VisionTrainingWindow usa tkinter estándar, se verá diferente.
+        win = VisionTrainingWindow(self)
+        win.grab_set()

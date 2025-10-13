@@ -59,6 +59,7 @@ class VisionTrainingWindow(tk.Toplevel):
         self.log_text.configure(state='disabled')
         self.log_text.see(tk.END) # Auto-scroll
 
+
     def start_session(self):
         """Inicia una nueva sesión de entrenamiento."""
         self._log("INFO: Iniciando nueva sesión de entrenamiento.")
@@ -89,10 +90,11 @@ class VisionTrainingWindow(tk.Toplevel):
         self._log(f"ANALYSIS: Pantalla analizada. Creado {current_node_id}.")
 
         if captured_action:
-            self._log(f"ACTION: Se ha llegado aquí con la acción: '{captured_action}'")
+            # Mensaje más claro para el usuario
+            self._log(f"ACTION: La acción '{captured_action}' te trajo a esta pantalla.")
             # Aquí es donde crearíamos la arista en nuestro grafo de navegación
         else:
-            self._log("ACTION: (Sin acción previa, es el primer nodo)")
+            self._log("ACTION: (Es la primera pantalla, no hay acción previa)")
 
         # 3. Prepararse para la siguiente acción
         self._log("LISTENING: Esperando la siguiente acción del usuario en el juego...")

@@ -3,7 +3,7 @@
 import threading
 from pynput import keyboard
 try:
-    from inputs import get_gamepad
+    from inputs import get_gamepad, UnpluggedError
 except ImportError:
     get_gamepad = None
 
@@ -27,6 +27,7 @@ class ActionMonitor:
         self.gamepad_to_action_map = {v: k for k, v in gamepad_mapping.items()}
 
         self.keyboard_listener_thread = None
+        self.keyboard_listener = None # Referencia para el listener
         self.gamepad_listener_thread = None
 
         self.last_action = None
@@ -54,12 +55,9 @@ class ActionMonitor:
 
     def _run_keyboard_listener(self):
         """Función que se ejecuta en un hilo para escuchar el teclado."""
-        # pynput.keyboard.Listener es bloqueante, pero se detendrá cuando _on_key_press devuelva False
-        with keyboard.Listener(on_press=self._on_key_press) as listener:
-            # El listener se une (espera) aquí. Si el stop_event se activa desde otro hilo,
-            # el listener se detendrá explícitamente.
-            self.stop_event.wait()
-            listener.stop()
+        self.keyboard_listener = keyboard.Listener(on_press=self._on_key_press)
+        self.keyboard_listener.start()
+        self.keyboard_listener.join() # El hilo terminará cuando el listener se detenga
 
     def _run_gamepad_listener(self):
         """Función que se ejecuta en un hilo para escuchar el gamepad."""
@@ -78,10 +76,11 @@ class ActionMonitor:
                                 self.last_action = action
                             self.stop_event.set() # Señaliza y sale del bucle
                             return
-        except Exception as e:
+        except (OSError, UnpluggedError) as e:
             # Puede fallar si no hay un gamepad conectado
-            if "No gamepad found" not in str(e):
-                print(f"Error en el listener del gamepad: {e}")
+            # Simplemente terminamos el hilo silenciosamente.
+            # El print es opcional si quieres depurar.
+            print(f"INFO: Hilo de gamepad terminado. Razón: {e}")
 
     def listen_for_single_action(self):
         """
@@ -123,13 +122,8 @@ class ActionMonitor:
 
         # Esperar a que los hilos terminen
         if self.keyboard_listener_thread and self.keyboard_listener_thread.is_alive():
-            # El listener de pynput necesita un pequeño truco para despertarlo si está esperando
-            try:
-                controller = keyboard.Controller()
-                controller.press(keyboard.Key.esc)
-                controller.release(keyboard.Key.esc)
-            except Exception:
-                pass # No importa si falla
+            if self.keyboard_listener:
+                self.keyboard_listener.stop()
             self.keyboard_listener_thread.join(timeout=0.5)
 
         if self.gamepad_listener_thread and self.gamepad_listener_thread.is_alive():
