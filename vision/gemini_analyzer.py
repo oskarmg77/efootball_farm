@@ -11,7 +11,8 @@ class GeminiVisionAnalyzer:
         if not api_key:
             raise ValueError("La API Key de Gemini no ha sido configurada.")
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-pro-vision')
+        # Usamos el nuevo modelo, más rápido y económico
+        self.model = genai.GenerativeModel('gemini-2.5-flash-lite')
         self.prompt = self._build_prompt()
 
     def _build_prompt(self) -> str:

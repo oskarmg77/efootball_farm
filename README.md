@@ -61,6 +61,7 @@ Actualmente, se ha construido la base fundamental del proyecto, enfocada en la m
 │
 ├── gui/
 │   ├── base_window.py          # Clase base para todas las ventanas.
+│   ├── input_monitor_window.py 
 │   ├── main_window.py          # GUI principal de la aplicación.
 │   ├── input_test_window.py    # GUI para probar los controles.
 │   └── vision_training_window.py # GUI para el entrenamiento del módulo de visión.

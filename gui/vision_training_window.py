@@ -6,6 +6,7 @@ from tkinter import messagebox
 # Importamos las clases y configuraciones necesarias
 from vision.action_monitor import ActionMonitor
 from config.controls import KEYBOARD_MAPPING, GAMEPAD_MAPPING
+from core.screen_capture import capture_window, capture_region_interactive
 
 
 class VisionTrainingWindow(ctk.CTkToplevel):
@@ -47,6 +48,9 @@ class VisionTrainingWindow(ctk.CTkToplevel):
 
         self.analyze_button = ctk.CTkButton(controls_frame, text="Analizar Pantalla", command=self.analyze_screen, state="disabled")
         self.analyze_button.pack(side="left", padx=10, pady=10)
+
+        self.analyze_region_button = ctk.CTkButton(controls_frame, text="Analizar Región...", command=lambda: self.analyze_screen(is_region=True), state="disabled", fg_color="#1F618D")
+        self.analyze_region_button.pack(side="left", padx=10, pady=10)
 
         self.save_map_button = ctk.CTkButton(controls_frame, text="Guardar Mapa de Navegación", command=self.save_map, state="disabled")
         self.save_map_button.pack(side="left", padx=10, pady=10)
@@ -96,25 +100,45 @@ class VisionTrainingWindow(ctk.CTkToplevel):
         # Actualizamos la GUI
         self.start_session_button.configure(state="disabled")
         self.analyze_button.configure(state="normal")
+        self.analyze_region_button.configure(state="normal")
         self.save_map_button.configure(state="normal")
         self._update_instructions(
             "action_needed",
-            "PASO 1: Ve a la primera pantalla del juego que quieras mapear. Cuando estés listo, vuelve y haz clic en 'Analizar Pantalla'."
+            "PASO 1: Ve a la primera pantalla del juego que quieras mapear. Cuando estés listo, vuelve y haz clic en 'Analizar Pantalla Completa' o 'Analizar Región'."
         )
 
-    def analyze_screen(self):
+    def analyze_screen(self, is_region: bool = False):
         """Analiza la pantalla actual, registra la acción previa y se prepara para la siguiente."""
         if not self.is_session_active:
             return
 
         # 1. Capturar la acción que nos trajo a esta pantalla
         captured_action = self.action_monitor.get_captured_action() # Esto es seguro, devuelve None si no hay nada
+        
+        # Ocultar temporalmente la GUI para no interferir con la captura
+        self.withdraw()
+        self.after(200) # Pequeña pausa para que la ventana se oculte
 
-        # 2. Lógica de análisis de la pantalla (aquí irá la llamada a Gemini)
+        # 2. Capturar la imagen (pantalla completa o región)
+        if is_region:
+            self._log("INFO: Iniciando captura de región. Dibuja un rectángulo en la pantalla.")
+            image = capture_region_interactive()
+        else:
+            image = capture_window()
+        
+        # Volver a mostrar la GUI
+        self.deiconify()
+
+        if image is None:
+            self._log("ERROR: La captura de pantalla fue cancelada o falló.")
+            return
+
+        # 3. Lógica de análisis de la pantalla (aquí irá la llamada a Gemini con la 'image')
         # Por ahora, simulamos la creación de un nodo
         self.node_counter += 1
         current_node_id = f"Node-{self.node_counter}"
-        self._log(f"ANALYSIS: Pantalla analizada. Creado {current_node_id}.")
+        analysis_type = "Región" if is_region else "Pantalla completa"
+        self._log(f"ANALYSIS: {analysis_type} analizada. Creado {current_node_id}.")
 
         if captured_action:
             # Mensaje más claro para el usuario
@@ -123,8 +147,9 @@ class VisionTrainingWindow(ctk.CTkToplevel):
         else:
             self._log("ACTION: (Es la primera pantalla, no hay acción previa)")
 
-        # 3. Prepararse para la siguiente acción
+        # 4. Prepararse para la siguiente acción
         self.analyze_button.configure(state="disabled") # Desactivar botón mientras se escucha
+        self.analyze_region_button.configure(state="disabled")
         self._update_instructions(
             "listening",
             "PASO 2: ¡Escuchando! Ahora ve al juego y realiza UNA SOLA ACCIÓN para ir a la siguiente pantalla (ej. pulsar 'Enter', 'Abajo'...). La acción se registrará automáticamente."
@@ -150,6 +175,7 @@ class VisionTrainingWindow(ctk.CTkToplevel):
         """Comprueba periódicamente si el monitor ha capturado una acción."""
         if self.action_monitor and self.action_monitor.last_action is not None:
             self.analyze_button.configure(state="normal")
+            self.analyze_region_button.configure(state="normal")
             self._update_instructions(
                 "action_needed",
                 f"¡Acción '{self.action_monitor.last_action}' registrada! Ahora, vuelve a hacer clic en 'Analizar Pantalla' para confirmar la nueva pantalla."
