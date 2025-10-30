@@ -4,7 +4,7 @@ import customtkinter as ctk
 import threading
 from queue import Queue
 
-from .base_window import BaseWindow
+from .base_window import BaseToplevelWindow  # Cambiado a BaseToplevelWindow
 from pynput import keyboard
 try:
     from inputs import get_gamepad, UnpluggedError
@@ -13,7 +13,7 @@ except ImportError:
 
 from config.controls import KEYBOARD_MAPPING, GAMEPAD_MAPPING
 
-class InputMonitorWindow(BaseWindow):
+class InputMonitorWindow(BaseToplevelWindow):  # Cambiado a BaseToplevelWindow
     """
     Una ventana para monitorear en tiempo real las entradas de teclado y gamepad
     y verificar si están correctamente mapeadas en controls.py.

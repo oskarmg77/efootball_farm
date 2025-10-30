@@ -3,7 +3,7 @@
 
 import time
 import customtkinter as ctk
-from .base_window import BaseWindow
+from .base_window import BaseToplevelWindow  # Cambiado a BaseToplevelWindow
 from core.input_controller import execute_action
 from config import controls
 from config.controls import (
@@ -13,7 +13,7 @@ from config.controls import (
 )
 
 
-class InputTestWindow(BaseWindow):
+class InputTestWindow(BaseToplevelWindow):  # Cambiado a BaseToplevelWindow
     def __init__(self):
         # Llamamos al constructor de la clase base con sus parámetros
         super().__init__(title="Simulador de Controles", width=800, height=500)
